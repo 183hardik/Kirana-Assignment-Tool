@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Kirana Assignment Tool</title>
+  <style>
+    :root{
+      --purple: #4b0082;
+      --purple-2: #6a0dad;
+      --yellow: #ffd84d;
+      --light: #fffbe6;
+      --card-bg: #fffdf3;
+    }
+
+    body{
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #fffdf8 0%, #fff7e6 100%);
+      color: var(--purple);
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1{
+      margin: 0 0 14px 0;
+      color: var(--purple);
+      font-size: 22px;
+      text-align: center;
+    }
+
+    .split{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 2px solid var(--purple);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(75,0,130,0.12);
+    }
+
+    .side{
+      padding: 20px;
+    }
+
+    .left{
+      border-right: 2px solid var(--purple);
+      background: #fffdf9;
+    }
+    .right{
+      background: #fffefc;
+    }
+
+    .side h2{
+      text-align: center;
+      color: var(--purple);
+      margin-bottom: 12px;
+      border-bottom: 2px solid var(--yellow);
+      padding-bottom: 6px;
+    }
+
+    .field{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    label{
+      width: 150px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    input[type="number"]{
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 2px solid var(--purple);
+      background: var(--light);
+      color: var(--purple);
+      font-weight: 600;
+    }
+
+    button.primary{
+      background: var(--purple);
+      color: var(--yellow);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(75,0,130,0.12);
+    }
+    button.primary:hover{ background: var(--purple-2); }
+
+    .panel{
+      background: linear-gradient(180deg,#fffaf0,#fff7e6);
+      border: 1px solid rgba(75,0,130,0.06);
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+
+    .note{
+      font-size: 13px;
+      color:#555;
+      margin-top: 8px;
+      text-align:center;
+    }
+
+    .db-table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .db-table th, .db-table td{
+      border: 1px solid rgba(75,0,130,0.08);
+      padding: 6px 8px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .list{
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .kirana-item{
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(75,0,130,0.08);
+      margin-bottom: 8px;
+      background: #fff;
+      cursor: grab;
+    }
+
+    .kirana-item.dragging{
+      opacity: 0.6;
+      transform: scale(0.99);
+    }
+
+    .kirana-title{
+      font-weight: 800;
+      color: var(--purple);
+    }
+    .kirana-sub{ font-size: 13px; color: #333; }
+
+    .controls{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .btn-small{
+      background: transparent;
+      border: 1px solid var(--purple);
+      color: var(--purple);
+      padding: 4px 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight:700;
+    }
+    .btn-small:hover{ background: rgba(75,0,130,0.05); }
+
+    .badge{
+      background: var(--yellow);
+      color: var(--purple);
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 2px solid var(--purple);
+      font-size: 13px;
+    }
+
+    .muted{ color:#666; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Kirana Assignment Tool</h1>
+
+  <div class="split">
+    <!-- Backend Side -->
+    <div class="side left">
+      <h2>Backend</h2>
+
+      <div class="panel">
+        <div class="field">
+          <label for="lat">Buyer Latitude</label>
+          <input id="lat" type="number" step="any" />
+        </div>
+        <div class="field">
+          <label for="lng">Buyer Longitude</label>
+          <input id="lng" type="number" step="any" />
+        </div>
+        <div class="field">
+          <label for="parcels">No. of Parcels</label>
+          <input id="parcels" type="number" min="1" />
+        </div>
+        <div style="text-align:center;">
+          <button class="primary" id="btnFind">Find Nearest Kiranas</button>
+        </div>
+        <p class="note">Radius = 400m. Must have capacity ≥ parcels.</p>
+      </div>
+
+      <div>
+        <strong>Kirana Database</strong>
+        <table class="db-table" id="dbTable">
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Lat</th><th>Lng</th>
+              <th>TotalCap</th><th>Pending</th><th>Avail</th><th>Review</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- User Side -->
+    <div class="side right">
+      <h2>User Site</h2>
+
+      <div class="panel">
+        <strong>Candidate Kiranas</strong>
+        <ul id="kiranaList" class="list"></ul>
+
+        <div style="text-align:center; margin-top:10px;">
+          <button class="primary" id="btnAssign">Assign to Top Priority</button>
+        </div>
+        <div id="assignResult" style="margin-top:12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Utility: Haversine ----------
+    function haversineMeters(lat1, lon1, lat2, lon2) {
+      function toRad(deg) { return deg * Math.PI / 180; }
+      const R = 6371000;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat/2)**2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon/2)**2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R*c;
+    }
+
+    // ---------- Sample DB ----------
+    const SAMPLE_DB = [
+      { id:1, name:"Kirana A", lat:12.9718, lng:77.5940, totalCapacity:50, pastPendingOrders:12, avgReview:4.6 },
+      { id:2, name:"Kirana B", lat:12.9725, lng:77.5950, totalCapacity:40, pastPendingOrders:6,  avgReview:4.3 },
+      { id:3, name:"Kirana C", lat:12.9709, lng:77.5932, totalCapacity:35, pastPendingOrders:32, avgReview:4.9 },
+      { id:4, name:"Kirana D", lat:12.9688, lng:77.5945, totalCapacity:60, pastPendingOrders:10, avgReview:4.1 },
+      { id:5, name:"Kirana E", lat:12.9735, lng:77.5948, totalCapacity:30, pastPendingOrders:0,  avgReview:3.9 },
+      { id:6, name:"Kirana F", lat:12.9713, lng:77.5928, totalCapacity:45, pastPendingOrders:8,  avgReview:4.7 },
+      { id:7, name:"Kirana G", lat:12.9750, lng:77.5965, totalCapacity:25, pastPendingOrders:5,  avgReview:4.0 },
+      { id:8, name:"Kirana H", lat:12.9695, lng:77.5918, totalCapacity:80, pastPendingOrders:60, avgReview:4.2 },
+      { id:9, name:"Kirana I", lat:12.9742, lng:77.5924, totalCapacity:20, pastPendingOrders:1,  avgReview:4.8 },
+      { id:10,name:"Kirana J", lat:12.9701, lng:77.5972, totalCapacity:55, pastPendingOrders:20, avgReview:4.4 }
+    ];
+    let DB = [...SAMPLE_DB];
+
+    const dbTableBody = document.querySelector('#dbTable tbody');
+    const kiranaListEl = document.getElementById('kiranaList');
+    const assignResultEl = document.getElementById('assignResult');
+
+    function renderDB(){
+      dbTableBody.innerHTML = '';
+      DB.forEach(k=>{
+        const avail = k.totalCapacity - k.pastPendingOrders;
+        const row = `<tr>
+          <td>${k.id}</td><td>${k.name}</td>
+          <td>${k.lat.toFixed(4)}</td><td>${k.lng.toFixed(4)}</td>
+          <td>${k.totalCapacity}</td><td>${k.pastPendingOrders}</td>
+          <td>${avail}</td><td>${k.avgReview}</td>
+        </tr>`;
+        dbTableBody.insertAdjacentHTML('beforeend', row);
+      });
+    }
+    renderDB();
+
+    function findKiranas(){
+      assignResultEl.innerHTML = '';
+      const lat = parseFloat(document.getElementById('lat').value);
+      const lng = parseFloat(document.getElementById('lng').value);
+      const parcels = parseInt(document.getElementById('parcels').value);
+      if(isNaN(lat)||isNaN(lng)||isNaN(parcels)||parcels<=0){ return; }
+
+      const candidates = DB.map(k=>{
+        const dist = haversineMeters(lat,lng,k.lat,k.lng);
+        return {...k, distance:Math.round(dist), avail:k.totalCapacity-k.pastPendingOrders};
+      })
+      .filter(k=>k.distance<=400 && k.avail>=parcels)
+      .sort((a,b)=>a.distance-b.distance||b.avgReview-a.avgReview)
+      .slice(0,4);
+
+      kiranaListEl.innerHTML = '';
+      candidates.forEach((k,idx)=>{
+        const li=document.createElement('li');
+        li.className='kirana-item';
+        li.dataset.id=k.id;
+        li.innerHTML=`
+          <div>
+            <div class="kirana-title">${k.name} (#${k.id})</div>
+            <div class="kirana-sub">Dist: ${k.distance}m | Avail: ${k.avail} | Review: ${k.avgReview}</div>
+          </div>
+          <div class="controls">
+            <button class="btn-small up">▲</button>
+            <button class="btn-small down">▼</button>
+            <div class="badge">#${idx+1}</div>
+          </div>`;
+        li.querySelector('.up').onclick=()=>{ if(li.previousElementSibling) kiranaListEl.insertBefore(li,li.previousElementSibling); updateBadges(); };
+        li.querySelector('.down').onclick=()=>{ if(li.nextElementSibling) kiranaListEl.insertBefore(li.nextElementSibling,li); updateBadges(); };
+        kiranaListEl.appendChild(li);
+      });
+      updateBadges();
+    }
+
+    function updateBadges(){
+      kiranaListEl.querySelectorAll('.badge').forEach((b,i)=>b.textContent='#'+(i+1));
+    }
+
+    function assignTop(){
+      const top=kiranaListEl.querySelector('li');
+      const parcels=parseInt(document.getElementById('parcels').value);
+      if(!top||isNaN(parcels)||parcels<=0) return;
+      const id=parseInt(top.dataset.id);
+      const k=DB.find(x=>x.id===id);
+      if(k && k.totalCapacity-k.pastPendingOrders>=parcels){
+        k.pastPendingOrders+=parcels;
+        renderDB();
+        assignResultEl.innerHTML=`<div>Assigned ${parcels} parcel(s) to <strong>${k.name}</strong>. Pending now ${k.pastPendingOrders}.</div>`;
+      } else {
+        assignResultEl.innerHTML=`<div style="color:red">Not enough capacity!</div>`;
+      }
+    }
+
+    document.getElementById('btnFind').onclick=findKiranas;
+    document.getElementById('btnAssign').onclick=assignTop;
+  </script>
+</body>
+</html>
